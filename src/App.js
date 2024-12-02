@@ -4,8 +4,10 @@ import Register from "./pages/Register";
 import Login from "./pages/Login";
 import Projects from "./pages/Projects";
 
+
 function App() {
   return (
+    
     <Router>
       <Routes>
         <Route path="/register" element={<Register />} />

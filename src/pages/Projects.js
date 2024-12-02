@@ -209,103 +209,211 @@ const ProjectsAndTasks = () => {
   };
 
   return (
-    <div style={{ maxWidth: "800px", margin: "0 auto" }}>
-      <h1>Projects and Tasks Management</h1>
+    <div style={styles.container}>
+      <h1 style={styles.header}>Projects and Tasks Management</h1>
 
-      {error && <p style={{ color: "red" }}>{error}</p>}
-      {success && <p style={{ color: "green" }}>{success}</p>}
+      {/* Display Success/Error Messages */}
+      {error && <div style={styles.error}>{error}</div>}
+      {success && <div style={styles.success}>{success}</div>}
 
-      {/* Search Projects */}
+      {/* Search Bar */}
       <input
         type="text"
         placeholder="Search projects..."
         value={searchQuery}
-        onChange={handleSearchChange}
-        style={{ width: "100%", padding: "10px", marginBottom: "10px" }}
+        onChange={(e) => setSearchQuery(e.target.value)}
+        style={styles.searchBar}
       />
 
       {/* Projects Section */}
-      <h2>Projects</h2>
-      <form onSubmit={handleAddOrUpdateProject}>
-        <input
-          type="text"
-          placeholder="Project Name"
-          value={projectFormData.name}
-          onChange={(e) =>
-            setProjectFormData({ ...projectFormData, name: e.target.value })
-          }
-          required
-          style={{ width: "100%", padding: "10px", marginBottom: "10px" }}
-        />
-        <textarea
-          placeholder="Project Description"
-          value={projectFormData.description}
-          onChange={(e) =>
-            setProjectFormData({ ...projectFormData, description: e.target.value })
-          }
-          required
-          style={{ width: "100%", padding: "10px", marginBottom: "10px" }}
-        />
-        <button type="submit">
-          {editProjectId ? "Update Project" : "Add Project"}
+      <div style={styles.section}>
+        <h2 style={styles.sectionHeader}>Projects</h2>
+        <button
+          onClick={() => {
+            setEditProjectId(null);
+            setProjectFormData({ name: "", description: "" });
+          }}
+          style={styles.addButton}
+        >
+          + Add Project
         </button>
-      </form>
 
-      <ul>
-        {filteredProjects.map((project) => (
-          <li key={project.id}>
-            <h3>{project.name}</h3>
-            <p>{project.description}</p>
-            <button onClick={() => fetchTasks(project.id)}>View Tasks</button>
-            <button onClick={() => setEditProjectId(project.id)}>Edit</button>
-            <button onClick={() => handleDelete("project", project.id)}>Delete</button>
-          </li>
-        ))}
-      </ul>
+        <div style={styles.grid}>
+          {filteredProjects.map((project) => (
+            <div key={project.id} style={styles.card}>
+              <h3>{project.name}</h3>
+              <p>{project.description}</p>
+              <div style={styles.cardActions}>
+                <button onClick={() => fetchTasks(project.id)} style={styles.viewButton}>
+                  View Tasks
+                </button>
+                <button
+                  onClick={() => {
+                    setEditProjectId(project.id);
+                    setProjectFormData({ name: project.name, description: project.description });
+                  }}
+                  style={styles.editButton}
+                >
+                  Edit
+                </button>
+                <button onClick={() => handleDelete("project", project.id)} style={styles.deleteButton}>
+                  Delete
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
 
       {/* Tasks Section */}
       {selectedProjectId && (
-        <>
-          <h2>Tasks</h2>
-          <form onSubmit={handleAddOrUpdateTask}>
-            <input
-              type="text"
-              placeholder="Task Title"
-              value={taskFormData.title}
-              onChange={(e) =>
-                setTaskFormData({ ...taskFormData, title: e.target.value })
-              }
-              required
-              style={{ width: "100%", padding: "10px", marginBottom: "10px" }}
-            />
-            <textarea
-              placeholder="Task Description"
-              value={taskFormData.description}
-              onChange={(e) =>
-                setTaskFormData({ ...taskFormData, description: e.target.value })
-              }
-              required
-              style={{ width: "100%", padding: "10px", marginBottom: "10px" }}
-            />
-            <button type="submit">
-              {editTaskId ? "Update Task" : "Add Task"}
-            </button>
-          </form>
+        <div style={styles.section}>
+          <button onClick={() => setSelectedProjectId(null)} style={styles.backButton}>
+            ← Back to Projects
+          </button>
+          <h2 style={styles.sectionHeader}>Tasks</h2>
+          <button
+            onClick={() => {
+              setEditTaskId(null);
+              setTaskFormData({ title: "", description: "" });
+            }}
+            style={styles.addButton}
+          >
+            + Add Task
+          </button>
 
-          <ul>
+          <div style={styles.grid}>
             {tasks.map((task) => (
-              <li key={task.id}>
+              <div key={task.id} style={styles.card}>
                 <h4>{task.title}</h4>
                 <p>{task.description}</p>
-                <button onClick={() => setEditTaskId(task.id)}>Edit</button>
-                <button onClick={() => handleDelete("task", task.id)}>Delete</button>
-              </li>
+                <div style={styles.cardActions}>
+                  <button
+                    onClick={() => {
+                      setEditTaskId(task.id);
+                      setTaskFormData({ title: task.title, description: task.description });
+                    }}
+                    style={styles.editButton}
+                  >
+                    Edit
+                  </button>
+                  <button onClick={() => handleDelete("task", task.id)} style={styles.deleteButton}>
+                    Delete
+                  </button>
+                </div>
+              </div>
             ))}
-          </ul>
-        </>
+          </div>
+        </div>
       )}
     </div>
   );
+};
+
+// Styles
+const styles = {
+  container: {
+    maxWidth: "900px",
+    margin: "0 auto",
+    fontFamily: "'Arial', sans-serif",
+    padding: "20px",
+    backgroundColor: "#f9f9f9",
+    borderRadius: "8px",
+    boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+  },
+  header: {
+    textAlign: "center",
+    marginBottom: "20px",
+    color: "#333",
+  },
+  searchBar: {
+    width: "100%",
+    padding: "10px",
+    borderRadius: "5px",
+    border: "1px solid #ccc",
+    marginBottom: "20px",
+  },
+  section: {
+    marginBottom: "30px",
+  },
+  sectionHeader: {
+    marginBottom: "10px",
+    color: "#555",
+  },
+  grid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
+    gap: "20px",
+  },
+  card: {
+    padding: "15px",
+    borderRadius: "8px",
+    backgroundColor: "#fff",
+    boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+  },
+  cardActions: {
+    display: "flex",
+    justifyContent: "space-between",
+    marginTop: "10px",
+  },
+  addButton: {
+    padding: "10px 15px",
+    backgroundColor: "#28a745",
+    color: "#fff",
+    border: "none",
+    borderRadius: "5px",
+    cursor: "pointer",
+    marginBottom: "10px",
+  },
+  backButton: {
+    padding: "10px 15px",
+    backgroundColor: "#007bff",
+    color: "#fff",
+    border: "none",
+    borderRadius: "5px",
+    cursor: "pointer",
+    marginBottom: "20px",
+  },
+  viewButton: {
+    padding: "5px 10px",
+    backgroundColor: "#007bff",
+    color: "#fff",
+    border: "none",
+    borderRadius: "5px",
+    cursor: "pointer",
+  },
+  editButton: {
+    padding: "5px 10px",
+    backgroundColor: "#ffc107",
+    color: "#fff",
+    border: "none",
+    borderRadius: "5px",
+    cursor: "pointer",
+  },
+  deleteButton: {
+    padding: "5px 10px",
+    backgroundColor: "#dc3545",
+    color: "#fff",
+    border: "none",
+    borderRadius: "5px",
+    cursor: "pointer",
+  },
+  success: {
+    padding: "10px",
+    backgroundColor: "#d4edda",
+    color: "#155724",
+    border: "1px solid #c3e6cb",
+    borderRadius: "5px",
+    marginBottom: "20px",
+  },
+  error: {
+    padding: "10px",
+    backgroundColor: "#f8d7da",
+    color: "#721c24",
+    border: "1px solid #f5c6cb",
+    borderRadius: "5px",
+    marginBottom: "20px",
+  },
 };
 
 export default ProjectsAndTasks;
