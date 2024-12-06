@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import "./styles/projects.css"
+import "./styles/projects.css";
+
 const ProjectsAndTasks = () => {
   const [projects, setProjects] = useState([]);
   const [tasks, setTasks] = useState([]);
   const [selectedProjectId, setSelectedProjectId] = useState(null);
   const [projectFormData, setProjectFormData] = useState({ name: "", description: "" });
-  const [taskFormData, setTaskFormData] = useState({ title: "", description: "" });
+  const [taskFormData, setTaskFormData] = useState({ title: "", description: "", completed: false });
   const [editProjectId, setEditProjectId] = useState(null);
   const [editTaskId, setEditTaskId] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -94,7 +95,7 @@ const ProjectsAndTasks = () => {
       setProjectFormData(data || { name: "", description: "" });
       setEditProjectId(data?.id || null);
     } else if (type === "task") {
-      setTaskFormData(data || { title: "", description: "" });
+      setTaskFormData(data || { title: "", description: "", completed: false });
       setEditTaskId(data?.id || null);
     }
 
@@ -105,24 +106,30 @@ const ProjectsAndTasks = () => {
   const closeModal = () => {
     setShowModal(false);
     setProjectFormData({ name: "", description: "" });
-    setTaskFormData({ title: "", description: "" });
+    setTaskFormData({ title: "", description: "", completed: false });
   };
 
   // Create or Update Project/Task
   const handleSave = async (e) => {
     e.preventDefault();
     const token = localStorage.getItem("token");
-    const method = modalType === "project" && editProjectId ? "PUT" : "POST";
+
+    // Determine whether it's a "create" or "update" operation
+    const isUpdate = modalType === "project" ? !!editProjectId : !!editTaskId;
+    const method = isUpdate ? "PUT" : "POST";
+
+    // Construct the appropriate URL based on type and whether it's an update
     const url =
       modalType === "project"
-        ? editProjectId
+        ? isUpdate
           ? `http://localhost:3000/projects/update/${editProjectId}`
           : "http://localhost:3000/projects/create"
-        : editTaskId
+        : isUpdate
         ? `http://localhost:3000/tasks/update/${editTaskId}`
         : `http://localhost:3000/tasks/create/${selectedProjectId}`;
 
-    const formData = modalType === "project" ? projectFormData : taskFormData;
+    // Use the appropriate form data (project or task)
+    const formData = modalType === "project" ? projectFormData : { ...taskFormData, completed: taskFormData.completed };
 
     try {
       const response = await fetch(url, {
@@ -140,11 +147,16 @@ const ProjectsAndTasks = () => {
       }
 
       const updatedItem = await response.json();
-      setSuccess(editProjectId || editTaskId ? `${modalType} updated!` : `${modalType} created!`);
 
-      // Refresh data
+      setSuccess(
+        isUpdate
+          ? `${modalType.charAt(0).toUpperCase() + modalType.slice(1)} updated!`
+          : `${modalType.charAt(0).toUpperCase() + modalType.slice(1)} created!`
+      );
+
+      // Refresh data based on the type (project or task)
       if (modalType === "project") {
-        const updatedProjects = editProjectId
+        const updatedProjects = isUpdate
           ? projects.map((project) =>
               project.id === editProjectId ? updatedItem : project
             )
@@ -153,7 +165,7 @@ const ProjectsAndTasks = () => {
         setProjects(updatedProjects);
         setFilteredProjects(updatedProjects);
       } else {
-        const updatedTasks = editTaskId
+        const updatedTasks = isUpdate
           ? tasks.map((task) => (task.id === editTaskId ? updatedItem : task))
           : [...tasks, updatedItem];
 
@@ -165,49 +177,46 @@ const ProjectsAndTasks = () => {
       setError(err.message);
     }
   };
+
   // Function to handle deletion of projects or tasks
-const handleDelete = async (type, id) => {
-  const token = localStorage.getItem("token");
-  const url =
-    type === "project"
-      ? `http://localhost:3000/projects/delete/${id}`
-      : `http://localhost:3000/tasks/delete/${id}`;
+  const handleDelete = async (type, id) => {
+    const token = localStorage.getItem("token");
+    const url =
+      type === "project"
+        ? `http://localhost:3000/projects/delete/${id}`
+        : `http://localhost:3000/tasks/delete/${id}`;
 
-  try {
-    const response = await fetch(url, {
-      method: "DELETE",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    try {
+      const response = await fetch(url, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || `Failed to delete ${type}.`);
-    }
-
-    setSuccess(`${type.charAt(0).toUpperCase() + type.slice(1)} deleted successfully!`);
-
-    if (type === "project") {
-      // Update the projects state after deletion
-      const updatedProjects = projects.filter((project) => project.id !== id);
-      setProjects(updatedProjects);
-      setFilteredProjects(updatedProjects);
-      // Clear tasks if the selected project is deleted
-      if (selectedProjectId === id) {
-        setSelectedProjectId(null);
-        setTasks([]);
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `Failed to delete ${type}.`);
       }
-    } else if (type === "task") {
-      // Update the tasks state after deletion
-      const updatedTasks = tasks.filter((task) => task.id !== id);
-      setTasks(updatedTasks);
-    }
-  } catch (err) {
-    setError(err.message);
-  }
-};
 
+      setSuccess(`${type.charAt(0).toUpperCase() + type.slice(1)} deleted successfully!`);
+
+      if (type === "project") {
+        const updatedProjects = projects.filter((project) => project.id !== id);
+        setProjects(updatedProjects);
+        setFilteredProjects(updatedProjects);
+        if (selectedProjectId === id) {
+          setSelectedProjectId(null);
+          setTasks([]);
+        }
+      } else if (type === "task") {
+        const updatedTasks = tasks.filter((task) => task.id !== id);
+        setTasks(updatedTasks);
+      }
+    } catch (err) {
+      setError(err.message);
+    }
+  };
 
   return (
     <div className="container">
@@ -269,16 +278,11 @@ const handleDelete = async (type, id) => {
               <div className="card" key={task.id}>
                 <h4>{task.title}</h4>
                 <p>{task.description}</p>
-                <button
-                  onClick={() => openModal("task", task)}
-                  className="btn btn-secondary"
-                >
+                <p>Status: {task.completed ? "Completed" : "Pending"}</p>
+                <button onClick={() => openModal("task", task)} className="btn btn-secondary">
                   Edit
                 </button>
-                <button
-                  onClick={() => handleDelete("task", task.id)}
-                  className="btn btn-danger"
-                >
+                <button onClick={() => handleDelete("task", task.id)} className="btn btn-danger">
                   Delete
                 </button>
               </div>
@@ -291,7 +295,6 @@ const handleDelete = async (type, id) => {
       {showModal && (
         <div className="modal">
           <div className="modal-content">
-            <h3>{modalType === "project" ? "Project" : "Task"} Form</h3>
             <form onSubmit={handleSave}>
               <input
                 type="text"
@@ -306,9 +309,7 @@ const handleDelete = async (type, id) => {
               />
               <textarea
                 placeholder="Description"
-                value={
-                  modalType === "project" ? projectFormData.description : taskFormData.description
-                }
+                value={modalType === "project" ? projectFormData.description : taskFormData.description}
                 onChange={(e) =>
                   modalType === "project"
                     ? setProjectFormData({ ...projectFormData, description: e.target.value })
@@ -316,6 +317,20 @@ const handleDelete = async (type, id) => {
                 }
                 required
               />
+              {modalType === "task" && (
+                <div>
+                  <label>
+                    <input
+                      type="checkbox"
+                      checked={taskFormData.completed}
+                      onChange={(e) =>
+                        setTaskFormData({ ...taskFormData, completed: e.target.checked })
+                      }
+                    />
+                    Completed
+                  </label>
+                </div>
+              )}
               <button type="submit" className="btn btn-primary">
                 Save
               </button>
