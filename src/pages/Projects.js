@@ -218,6 +218,36 @@ const ProjectsAndTasks = () => {
     }
   };
 
+  // Toggle task completion status
+  const handleToggleTaskCompletion = async (taskId, completed) => {
+    const token = localStorage.getItem("token");
+
+    try {
+      const response = await fetch(`http://localhost:3000/tasks/update/${taskId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ completed: !completed }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to update task status.");
+      }
+
+      const updatedTask = await response.json();
+      const updatedTasks = tasks.map((task) =>
+        task.id === taskId ? { ...task, completed: updatedTask.completed } : task
+      );
+
+      setTasks(updatedTasks);
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
   return (
     <div className="container">
       <h1>Projects and Tasks</h1>
@@ -243,22 +273,16 @@ const ProjectsAndTasks = () => {
         </button>
         <div className="grid">
           {filteredProjects.map((project) => (
-            <div className="card" key={project.id}>
-              <h3>{project.name}</h3>
+            <div key={project.id} className="card">
+              <h4>{project.name}</h4>
               <p>{project.description}</p>
               <button onClick={() => fetchTasks(project.id)} className="btn btn-primary">
                 View Tasks
               </button>
-              <button
-                onClick={() => openModal("project", project)}
-                className="btn btn-secondary"
-              >
+              <button onClick={() => openModal("project", project)} className="btn btn-secondary">
                 Edit
               </button>
-              <button
-                onClick={() => handleDelete("project", project.id)}
-                className="btn btn-danger"
-              >
+              <button onClick={() => handleDelete("project", project.id)} className="btn btn-danger">
                 Delete
               </button>
             </div>
@@ -269,13 +293,13 @@ const ProjectsAndTasks = () => {
       {/* Tasks Section */}
       {selectedProjectId && (
         <div className="section">
-          <h2>Tasks</h2>
+          <h2>Tasks for Project</h2>
           <button onClick={() => openModal("task")} className="btn btn-add">
             + Add Task
           </button>
           <div className="grid">
             {tasks.map((task) => (
-              <div className="card" key={task.id}>
+              <div key={task.id} className="card">
                 <h4>{task.title}</h4>
                 <p>{task.description}</p>
                 <p>Status: {task.completed ? "Completed" : "Pending"}</p>
@@ -285,6 +309,17 @@ const ProjectsAndTasks = () => {
                 <button onClick={() => handleDelete("task", task.id)} className="btn btn-danger">
                   Delete
                 </button>
+                {/* Checkbox outside the modal */}
+                <div>
+                  <label>
+                    <input
+                      type="checkbox"
+                      checked={task.completed}
+                      onChange={() => handleToggleTaskCompletion(task.id, task.completed)}
+                    />
+                    Mark as {task.completed ? "Pending" : "Completed"}
+                  </label>
+                </div>
               </div>
             ))}
           </div>
@@ -317,20 +352,6 @@ const ProjectsAndTasks = () => {
                 }
                 required
               />
-              {modalType === "task" && (
-                <div>
-                  <label>
-                    <input
-                      type="checkbox"
-                      checked={taskFormData.completed}
-                      onChange={(e) =>
-                        setTaskFormData({ ...taskFormData, completed: e.target.checked })
-                      }
-                    />
-                    Completed
-                  </label>
-                </div>
-              )}
               <button type="submit" className="btn btn-primary">
                 Save
               </button>
