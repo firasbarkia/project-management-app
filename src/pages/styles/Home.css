@@ -1,0 +1,198 @@
+/* Global Styles */
+.home {
+    margin: 0;
+    font-family: "Nunito", sans-serif;
+    background: linear-gradient(135deg, #0a7b83, #0a7b83 50%, #f5f5f5 50%);
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .home-container {
+    background: #f5f5f5;
+    border-radius: 20px;
+    padding: 40px;
+    max-width: 1200px;
+    width: 100%;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow: hidden;
+  }
+  
+  .navbar {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 40px;
+  }
+  
+  .navbar .logo {
+    font-size: 24px;
+    font-weight: 700;
+    color: #0a7b83;
+    animation: slide-down 1s ease-out;
+  }
+  
+  .navbar .nav-links {
+    display: flex;
+    gap: 20px;
+  }
+  
+  .navbar .nav-links a {
+    text-decoration: none;
+    color: #333;
+    font-weight: 600;
+    opacity: 0;
+    animation: fade-in 1.5s ease-out forwards;
+  }
+  
+  .navbar .login-btn {
+    padding: 10px 20px;
+    border: 2px solid #333;
+    border-radius: 20px;
+    text-decoration: none;
+    color: #333;
+    font-weight: 600;
+    animation: fade-in-up 1.5s ease-out forwards;
+  }
+  
+  /* Main Content */
+  .main-content {
+    display: flex;
+    width: 100%;
+    gap: 40px;
+  }
+  
+  .content h1 {
+    font-size: 48px;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 20px;
+  }
+  
+  .content h1 .highlight {
+    color: #0a7b83;
+  }
+  
+  .content p {
+    font-size: 18px;
+    color: #666;
+    margin-bottom: 40px;
+  }
+  
+  .cta-btn {
+    padding: 15px 30px;
+    background: #0a7b83;
+    color: #fff;
+    border: none;
+    border-radius: 30px;
+    font-size: 18px;
+    font-weight: 600;
+    text-decoration: none;
+  }
+  
+  .image-container {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .image-container img {
+    border-radius: 20px;
+    width: 100%;
+    max-width: 500px;
+  }
+  
+  .overlay-square {
+    position: absolute;
+    background: #f5c242;
+    width: 100px;
+    height: 100px;
+    top: -50px;
+    left: 50px;
+    border-radius: 10px;
+    animation: bounce 3s infinite;
+  }
+  
+  .overlay-square-small {
+    position: absolute;
+    background: #0a7b83;
+    width: 50px;
+    height: 50px;
+    bottom: -25px;
+    right: -25px;
+    border-radius: 10px;
+    animation: bounce 3s infinite alternate;
+  }
+  
+  /* Animations */
+  @keyframes fade-in {
+    0% {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  @keyframes fade-in-up {
+    0% {
+      opacity: 0;
+      transform: translateY(50px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  @keyframes fade-in-left {
+    0% {
+      opacity: 0;
+      transform: translateX(-50px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+  
+  @keyframes fade-in-right {
+    0% {
+      opacity: 0;
+      transform: translateX(50px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+  
+  @keyframes slide-down {
+    0% {
+      transform: translateY(-100px);
+    }
+    100% {
+      transform: translateY(0);
+    }
+  }
+  
+  @keyframes bounce {
+    0% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+    100% {
+      transform: translateY(0);
+    }
+  }
+  
